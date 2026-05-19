@@ -1,0 +1,27 @@
+{
+  "project": {
+    "description": "Personal portfolio showcasing full-stack projects and experiments."
+  },
+  "author": {
+    "role": "Full Stack Developer"
+  },
+  "features": {
+    "responsiveDesign": {
+      "title": "Responsive Design",
+      "description": "Optimized for desktop, tablet, and mobile devices."
+    },
+    "seoOptimized": {
+      "title": "SEO Optimized",
+      "description": "Metadata, OpenGraph, and performance optimization."
+    },
+    "animations": {
+      "title": "Animations",
+      "description": "Smooth interactions using Framer Motion."
+    }
+  },
+  "futurePlans": {
+    "blog": "Add blog system",
+    "adminDashboard": "Add admin dashboard",
+    "multilingualSupport": "Add multilingual support"
+  }
+}
