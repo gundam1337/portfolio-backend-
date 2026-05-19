@@ -7,6 +7,7 @@ export const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   THROTTLE_TTL: z.coerce.number().int().positive().default(60000),
   THROTTLE_LIMIT: z.coerce.number().int().positive().default(100),
+  FRONTEND_URL: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1,3 +1,4 @@
+import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -17,7 +18,17 @@ async function bootstrap(): Promise<void> {
     { bufferLogs: true },
   );
 
+  const config = app.get(ConfigService<Env, true>);
+  const port = config.get('PORT', { infer: true });
+  const nodeEnv = config.get('NODE_ENV', { infer: true });
+  const frontendUrl = config.get('FRONTEND_URL', { infer: true });
+
   await app.register(helmet);
+  await app.register(cors, {
+    origin: nodeEnv === 'production' ? frontendUrl : true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Portfolio Backend')
@@ -26,9 +37,6 @@ async function bootstrap(): Promise<void> {
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
-
-  const config = app.get(ConfigService<Env, true>);
-  const port = config.get('PORT', { infer: true });
 
   await app.listen(port, '0.0.0.0');
   Logger.log(`Listening on http://localhost:${port} — docs at /docs`, 'Bootstrap');
