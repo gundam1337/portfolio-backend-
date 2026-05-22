@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 export class QueryRequestDto {
   @ApiProperty({
@@ -20,6 +20,21 @@ export class QueryRequestDto {
   @MinLength(3)
   @MaxLength(2000)
   question!: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Resume an existing conversation. Omit (or leave blank) to start a new one. ' +
+      'Copy the conversationId from a previous response to continue that thread.',
+    example: null,
+    nullable: true,
+    format: 'uuid',
+  })
+  // Optional — omitting it starts a new conversation.
+  // When provided it must be a valid UUID v4; anything else fails validation
+  // before it ever reaches the session store.
+  @IsOptional()
+  @IsUUID('4')
+  conversationId?: string;
 }
 // Note: extra fields are already rejected globally by forbidNonWhitelisted: true on
 // the APP_PIPE ValidationPipe in app.module.ts — no per-DTO opt-in needed.

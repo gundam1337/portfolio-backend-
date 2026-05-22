@@ -31,7 +31,6 @@ export class QueryController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
-  // @UsePipes on the method, not the class, so it only applies to this handler.
   // NestJS pipes run in registration order: the global ValidationPipe fires
   // first (registered in AppModule), then SanitizationPipe fires second.
   // Result: the DTO arrives here already type-validated AND sanitized.
@@ -40,10 +39,12 @@ export class QueryController {
   @ApiOkResponse({ description: 'Query accepted for processing' })
   @ApiBadRequestResponse({ description: 'Validation or guard failed' })
   @ApiTooManyRequestsResponse({ description: 'Rate limit exceeded' })
-  query(@Body() dto: QueryRequestDto, @Req() req: FastifyRequest): QueryResponse {
-    // InputGuardService runs after sanitization — it checks semantic validity
-    // of the cleaned string.  When it throws BadRequestException the global
-    // AllExceptionsFilter formats it with the requestId automatically.
+  async query(
+    @Body() dto: QueryRequestDto,
+    @Req() req: FastifyRequest,
+  ): Promise<QueryResponse> {
+    // InputGuardService runs after sanitization — checks semantic validity
+    // of the cleaned string before it touches the session or RAG pipeline.
     this.inputGuard.validateQuestion(dto.question);
 
     return this.queryService.process(dto, req.id as string);

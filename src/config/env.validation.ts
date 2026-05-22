@@ -10,7 +10,10 @@ export const envSchema = z.object({
   THROTTLE_MINUTE_LIMIT: z.coerce.number().int().positive().default(10),
   THROTTLE_HOUR_TTL: z.coerce.number().int().positive().default(3_600_000),
   THROTTLE_HOUR_LIMIT: z.coerce.number().int().positive().default(100),
-  REDIS_URL: z.string().url().optional(),
+  // Required — session store, throttler storage, and cache all depend on Redis.
+  // Render Key Value add-on injects this automatically; for local dev use
+  // redis://localhost:6379.  The app refuses to start when it is absent.
+  REDIS_URL: z.string().url({ message: 'REDIS_URL must be a valid URL (e.g. redis://localhost:6379)' }),
   CACHE_TTL: z.coerce.number().int().positive().default(300_000),
   FRONTEND_URL: z.string().url().optional(),
 });
