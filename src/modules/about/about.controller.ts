@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { I18nLang } from 'nestjs-i18n';
 import { AboutService } from './about.service';
-import type { AboutResponse } from './about.types';
+import { AboutResponseDto } from './dto/about-response.dto';
 
 @ApiTags('about')
 @Controller('api/about')
@@ -16,8 +16,8 @@ export class AboutController {
     enum: ['en', 'fr'],
     description: 'Response language (defaults to en)',
   })
-  @ApiOkResponse({ description: 'Portfolio information' })
-  getAbout(@I18nLang() lang: string): Promise<AboutResponse> {
+  @ApiOkResponse({ type: AboutResponseDto })
+  getAbout(@I18nLang() lang: string): Promise<AboutResponseDto> {
     return this.aboutService.getAbout(lang);
   }
 }

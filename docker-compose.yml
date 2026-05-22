@@ -1,0 +1,32 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - '${PORT:-3000}:3000'
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+      CACHE_TTL: 300000
+      THROTTLE_MINUTE_LIMIT: 10
+      THROTTLE_HOUR_TTL: 3600000
+      THROTTLE_HOUR_LIMIT: 100
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis_data:

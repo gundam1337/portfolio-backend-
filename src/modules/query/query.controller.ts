@@ -7,22 +7,14 @@ import {
   ApiTags,
   ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { QueryRequestDto } from './dto/query-request.dto';
-
-interface QueryResponse {
-  requestId: string;
-  status: 'received';
-  question: string;
-}
+import { QueryService } from './query.service';
+import type { QueryResponse } from './interfaces/query.interface';
 
 @ApiTags('query')
 @Controller('api/query')
 export class QueryController {
-  constructor(
-    @InjectPinoLogger(QueryController.name)
-    private readonly logger: PinoLogger,
-  ) {}
+  constructor(private readonly queryService: QueryService) {}
 
   @Post()
   @HttpCode(HttpStatus.OK)
@@ -31,8 +23,6 @@ export class QueryController {
   @ApiBadRequestResponse({ description: 'Validation failed' })
   @ApiTooManyRequestsResponse({ description: 'Rate limit exceeded' })
   query(@Body() dto: QueryRequestDto, @Req() req: FastifyRequest): QueryResponse {
-    const requestId = req.id as string;
-    this.logger.info({ requestId, question: dto.question }, 'received valid query');
-    return { requestId, status: 'received', question: dto.question };
+    return this.queryService.process(dto, req.id as string);
   }
 }

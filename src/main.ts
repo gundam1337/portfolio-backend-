@@ -6,7 +6,7 @@ import {
   FastifyAdapter,
   type NestFastifyApplication,
 } from '@nestjs/platform-fastify';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { setupSwagger } from './config/swagger.config';
 import { Logger } from 'nestjs-pino';
 import type { IncomingMessage } from 'node:http';
 import { v4 as uuidv4 } from 'uuid';
@@ -60,13 +60,7 @@ async function bootstrap(): Promise<void> {
     credentials: true,
   });
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Portfolio Backend')
-    .setDescription('Portfolio backend service API')
-    .setVersion('1.0.0')
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
+  setupSwagger(app);
 
   await app.listen(port, '0.0.0.0');
   app

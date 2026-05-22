@@ -9,12 +9,12 @@ import { Keyv } from 'keyv';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { LoggerModule } from 'nestjs-pino';
 import * as path from 'path';
-import { AboutModule } from './about/about.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { CustomThrottlerGuard } from './common/guards/throttler.guard';
 import { validateEnv, type Env } from './config/env.validation';
-import { HealthModule } from './health/health.module';
-import { QueryModule } from './query/query.module';
+import { AboutModule } from './modules/about/about.module';
+import { HealthModule } from './modules/health/health.module';
+import { QueryModule } from './modules/query/query.module';
 
 @Module({
   imports: [

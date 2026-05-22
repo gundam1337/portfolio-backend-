@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
-import type { AboutData, AboutResponse } from './about.types';
+import type { AboutDataDto, AboutResponseDto } from './dto/about-response.dto';
 
 @Injectable()
 export class AboutService {
   constructor(private readonly i18n: I18nService) {}
 
-  async getAbout(lang: string): Promise<AboutResponse> {
+  async getAbout(lang: string): Promise<AboutResponseDto> {
     const t = (key: string) => this.i18n.t(`about.${key}`, { lang });
 
-    const data: AboutData = {
+    const data: AboutDataDto = {
       project: {
         name: 'Omar Portfolio',
         description: await t('project.description'),
