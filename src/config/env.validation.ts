@@ -16,6 +16,10 @@ export const envSchema = z.object({
   REDIS_URL: z.string().url({ message: 'REDIS_URL must be a valid URL (e.g. redis://localhost:6379)' }),
   CACHE_TTL: z.coerce.number().int().positive().default(300_000),
   FRONTEND_URL: z.string().url().optional(),
+  // OpenAI — required for query rewriting and future RAG steps.
+  // Missing OPENAI_API_KEY will fail fast at startup before any request is served.
+  OPENAI_API_KEY: z.string().min(1, { message: 'OPENAI_API_KEY is required' }),
+  OPENAI_REWRITER_MODEL: z.string().default('gpt-4o-mini'),
 });
 
 export type Env = z.infer<typeof envSchema>;

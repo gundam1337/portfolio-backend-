@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryService } from '../../src/modules/query/query.service';
 import type { QueryRequestDto } from '../../src/modules/query/dto/query-request.dto';
 import { SessionService } from '../../src/shared/session/session.service';
+import { QueryRewriterService } from '../../src/modules/query-rewriter/query-rewriter.service';
 
 const NOW = '2024-01-01T00:00:00.000Z';
 
@@ -14,6 +15,7 @@ function makeSession(id = 'session-id') {
 describe('QueryService', () => {
   let service: QueryService;
   let mockSessionService: Record<string, ReturnType<typeof vi.fn>>;
+  let mockRewriter: Record<string, ReturnType<typeof vi.fn>>;
 
   beforeEach(async () => {
     const session = makeSession();
@@ -23,6 +25,14 @@ describe('QueryService', () => {
       appendUserMessage: vi.fn().mockResolvedValue(session),
       appendAssistantMessage: vi.fn().mockResolvedValue(session),
       getRecentHistory: vi.fn().mockResolvedValue([]),
+    };
+
+    mockRewriter = {
+      rewrite: vi.fn().mockResolvedValue({
+        rewrittenQuestion: 'What stack does Omar use?',
+        rewriteUsed: false,
+        fallbackReason: null,
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -36,21 +46,27 @@ describe('QueryService', () => {
           provide: SessionService,
           useValue: mockSessionService,
         },
+        {
+          provide: QueryRewriterService,
+          useValue: mockRewriter,
+        },
       ],
     }).compile();
 
     service = module.get<QueryService>(QueryService);
   });
 
-  it('returns received status with requestId, conversationId, question, and history', async () => {
+  it('returns requestId, conversationId, originalQuestion, rewrittenQuestion, rewriteUsed, fallbackReason, and history', async () => {
     const dto: QueryRequestDto = { question: 'What stack does Omar use?' };
     const result = await service.process(dto, 'test-request-id');
 
     expect(result).toEqual({
       requestId: 'test-request-id',
       conversationId: 'session-id',
-      status: 'received',
-      question: 'What stack does Omar use?',
+      originalQuestion: 'What stack does Omar use?',
+      rewrittenQuestion: 'What stack does Omar use?',
+      rewriteUsed: false,
+      fallbackReason: null,
       history: [],
     });
   });
