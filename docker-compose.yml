@@ -12,6 +12,36 @@ services:
       timeout: 5s
       retries: 5
 
+  loki:
+    image: grafana/loki:3.0.0
+    ports:
+      - '3100:3100'
+    volumes:
+      - ./observability/loki/loki-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://localhost:3100/ready || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    ports:
+      - '3001:3000'
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_ANALYTICS_REPORTING_ENABLED: 'false'
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      loki:
+        condition: service_healthy
+
   app:
     build: .
     ports:
@@ -20,6 +50,7 @@ services:
       NODE_ENV: development
       PORT: 3000
       REDIS_URL: redis://redis:6379
+      LOKI_URL: http://loki:3100
       CACHE_TTL: 300000
       THROTTLE_MINUTE_LIMIT: 10
       THROTTLE_HOUR_TTL: 3600000
@@ -27,6 +58,10 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      loki:
+        condition: service_healthy
 
 volumes:
   redis_data:
+  loki_data:
+  grafana_data:

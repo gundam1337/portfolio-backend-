@@ -1,0 +1,139 @@
+{
+  "title": "NestJS Logs",
+  "uid": "nestjs-logs",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "tags": ["nestjs", "loki"],
+  "templating": {
+    "list": [
+      {
+        "name": "search",
+        "label": "Search",
+        "type": "textbox",
+        "current": { "value": "" },
+        "hide": 0
+      },
+      {
+        "name": "level",
+        "label": "Log Level",
+        "type": "custom",
+        "current": { "value": "error", "text": "error" },
+        "options": [
+          { "value": "", "text": "All" },
+          { "value": "debug", "text": "debug" },
+          { "value": "info", "text": "info" },
+          { "value": "warn", "text": "warn" },
+          { "value": "error", "text": "error" }
+        ],
+        "hide": 0,
+        "includeAll": false,
+        "multi": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Error Count Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "sum by (level) (count_over_time({app=\"nestjs-portfolio\", level=\"error\"}[$__interval]))",
+          "legendFormat": "errors",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "sum by (level) (count_over_time({app=\"nestjs-portfolio\", level=\"warn\"}[$__interval]))",
+          "legendFormat": "warnings",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "warnings" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 2,
+      "title": "Recent Errors (Last 15 min)",
+      "type": "logs",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "{app=\"nestjs-portfolio\", level=\"error\"} | json | line_format \"[{{.requestId}}] {{.msg}} — {{.err_message}}\"",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showTime": true,
+        "showLabels": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "timeFrom": "15m"
+    },
+    {
+      "id": 3,
+      "title": "All Logs — Search & Filter",
+      "type": "logs",
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 18 },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "{app=\"nestjs-portfolio\"} ${level:pipe} |= \"${search}\" | json",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showTime": true,
+        "showLabels": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      }
+    },
+    {
+      "id": 4,
+      "title": "All Errors Table",
+      "type": "table",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 32 },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "{app=\"nestjs-portfolio\", level=\"error\"} | json | keep timestamp, requestId, msg, err_message, err_stack, url, method",
+          "refId": "A",
+          "instant": false
+        }
+      ],
+      "transformations": [
+        { "id": "sortBy", "options": { "fields": [{ "desc": true, "displayName": "Time" }] } }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "width": 200 } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "err_stack" }, "properties": [{ "id": "custom.width", "value": 500 }, { "id": "custom.displayMode", "value": "auto" }] },
+          { "matcher": { "id": "byName", "options": "Time" }, "properties": [{ "id": "custom.width", "value": 180 }] }
+        ]
+      }
+    }
+  ]
+}
