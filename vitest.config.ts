@@ -4,6 +4,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/**/*.spec.ts'],
+    include: [
+      'src/**/*.spec.ts',   // unit tests co-located with source
+      'test/unit/**/*.spec.ts', // unit tests in test/unit/
+    ],
   },
 });

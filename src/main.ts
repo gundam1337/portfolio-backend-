@@ -22,6 +22,13 @@ async function bootstrap(): Promise<void> {
       // Render sits behind a load balancer; this makes req.ip reflect the real
       // client IP from X-Forwarded-For rather than the proxy's address
       trustProxy: true,
+      // Reject request bodies larger than 10 KB before any JSON parsing occurs.
+      // Fastify enforces this in its HTTP parser — the client gets a 413 with no
+      // route handler or validation pipe ever running, which is cheaper and safer
+      // than parsing a large payload first.  10 KB is generous for a question
+      // field capped at 2 000 chars; it leaves room for future fields without
+      // opening the door to multi-MB abuse.
+      bodyLimit: 10 * 1024, // 10 KB
       // Override Fastify's default integer request IDs with UUIDs so every
       // log line and response header carries a globally unique trace ID.
       // Reuses an upstream X-Request-ID header when present (proxy / service mesh).

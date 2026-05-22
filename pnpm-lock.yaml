@@ -53,6 +53,9 @@ importers:
       class-validator:
         specifier: ^0.15.1
         version: 0.15.1
+      decancer:
+        specifier: ^3.3.3
+        version: 3.3.3
       fastify:
         specifier: ^5.8.5
         version: 5.8.5
@@ -1120,6 +1123,88 @@ packages:
     resolution: {integrity: sha512-U3gxVaDVnuZKhSspW/MzMxE1kq7zOdc072FcSNoqA1I9p8HyKbBFfEHoWckBAMgNMph4MamwS5iTVzFmrnt8TQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@vierofernando/decancer-android-arm-eabi@3.3.3':
+    resolution: {integrity: sha512-9KWlEiTAMGOfM5b89/bGLR1fQu3LEKxejp+PqyhokVSSGph0NyZsFMg/SAZs6RNnZfvLsNcZ+VnmC0by1vYXUg==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [android]
+
+  '@vierofernando/decancer-android-arm64@3.3.3':
+    resolution: {integrity: sha512-DFGNiXX2dSSAz1APOHERSHjG3PDrwbJdpH3567Wptqy7rA+1bmJb841K9sI87NrttVfpDyXui7ekXCBn51ey0g==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [android]
+
+  '@vierofernando/decancer-darwin-arm64@3.3.3':
+    resolution: {integrity: sha512-DMFZT7OTRn4UMR2d7VbML5F/isD2dkcvocQOYI5n2+bcH/7XYxsLe9yFIHL0PkUDJWYCYfe/j2Tbc6vfOiPq8g==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@vierofernando/decancer-darwin-x64@3.3.3':
+    resolution: {integrity: sha512-6PldDASDQQaVMAEFlyzm8zZp7xe3u8Gi9IrxrhyD0CaA8JP1EmeoB0C4Kr0HfFYOplv2l7aTNZBWogbTHrqjBA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@vierofernando/decancer-freebsd-x64@3.3.3':
+    resolution: {integrity: sha512-IBWGUCDKECDzXF9Xfye2NeI023so6NPhDD14FIcVwDlYks7b2Spb/B1lK/AVV0yg3FNiuczQdGxqujVQ3vA2DA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@vierofernando/decancer-linux-arm-gnueabihf@3.3.3':
+    resolution: {integrity: sha512-qs9/Z0IPhDDcVPl2vl1/HBqCZOIEqaPs3vcIz70XtfJBvJwjOYlyZ25MOE9ZuGLkTlf9r5+WRG1lEG2ZyALEQw==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [linux]
+
+  '@vierofernando/decancer-linux-arm64-gnu@3.3.3':
+    resolution: {integrity: sha512-VQQYtK1p1PHkbI0SH4N4xIRBTbfd+ByVyGy/3+UOXGp4S3SBbBN8cuKtZRDtFKgg7FwvqzbVMG/p5ApfyBfz6w==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@vierofernando/decancer-linux-arm64-musl@3.3.3':
+    resolution: {integrity: sha512-gBfb7yr2wlD8jfzFBxdggx5VgmjcvzGs7Gl3lwbfaitOdK61bTMVX2Gn0yiXghSz0Ue96N3s0wOkSP+E1/gydg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@vierofernando/decancer-linux-x64-gnu@3.3.3':
+    resolution: {integrity: sha512-wuvOsU7Ur1wiQlNArmkUi1ZNH/8CExO/M3LK2rWDaLvgskdt81TBxTHYzP0cjshW2FE5r7rkLPhwyVnaNVlCFg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@vierofernando/decancer-linux-x64-musl@3.3.3':
+    resolution: {integrity: sha512-Y25fbInKQP0JYqxKsKvJIuGRyc9Q9WT/XaZeT3e4DG3R2u0TXnrXKTK2Rf9h8dcLEkcKpcQCF3cjWMZXffJetw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@vierofernando/decancer-win32-arm64-msvc@3.3.3':
+    resolution: {integrity: sha512-6I+EA0i5c2BqOstRjoDDwpvG0ASk0HwpEu/2r+O+/T5SpTnBTOs11Y1Uk/2N/ii/vSiiOaFM3bueaNqAkTiyWg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@vierofernando/decancer-win32-ia32-msvc@3.3.3':
+    resolution: {integrity: sha512-V2X+X0OOozrItxEEQdvrvqgNZo7VZYXEVy/KB7Qipw2pCzIVMw2aG5fez8eNAz2hvipG/U3hYBMmk+yMbnkD1Q==}
+    engines: {node: '>= 10'}
+    cpu: [ia32]
+    os: [win32]
+
+  '@vierofernando/decancer-win32-x64-msvc@3.3.3':
+    resolution: {integrity: sha512-KWv2QShAg/PosR2PBoTrWU0+K1nE7iwIOqkUCDb0iqagdXTLE/gskm8dDQMP8pIE497HU3a0dLfn5MGQn8AF8g==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
   '@vitest/expect@4.1.7':
     resolution: {integrity: sha512-1R+tw0ortHEbZDGMymm+pN7/AFQ/RkFFdtd7EN+VBpynKmLbP8A3rpEXdshBJ7+8hQ9zBJh/i1s0yKNtxAnU7w==}
 
@@ -1597,6 +1682,10 @@ packages:
     peerDependenciesMeta:
       supports-color:
         optional: true
+
+  decancer@3.3.3:
+    resolution: {integrity: sha512-UHqmJ4S63JJiTjnZ/uRxidLJpQRI9Vz2uVIfF+sKGlFHiBJbLRH97M270ogzEE9ebv9AkKuPCFg5ocuG+WVNqA==}
+    engines: {node: '>= 10'}
 
   decompress-response@6.0.0:
     resolution: {integrity: sha512-aW35yZM6Bb/4oJlZncMH2LCoZtJXTRxES17vE3hoRiowU2kWHaJKFkSBDnDR+cm9J+9QhXmREyIfv0pji9ejCQ==}
@@ -4070,6 +4159,45 @@ snapshots:
       '@typescript-eslint/types': 8.59.4
       eslint-visitor-keys: 5.0.1
 
+  '@vierofernando/decancer-android-arm-eabi@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-android-arm64@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-darwin-arm64@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-darwin-x64@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-freebsd-x64@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-linux-arm-gnueabihf@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-linux-arm64-gnu@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-linux-arm64-musl@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-linux-x64-gnu@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-linux-x64-musl@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-win32-arm64-msvc@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-win32-ia32-msvc@3.3.3':
+    optional: true
+
+  '@vierofernando/decancer-win32-x64-msvc@3.3.3':
+    optional: true
+
   '@vitest/expect@4.1.7':
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -4608,6 +4736,22 @@ snapshots:
   debug@4.4.3:
     dependencies:
       ms: 2.1.3
+
+  decancer@3.3.3:
+    optionalDependencies:
+      '@vierofernando/decancer-android-arm-eabi': 3.3.3
+      '@vierofernando/decancer-android-arm64': 3.3.3
+      '@vierofernando/decancer-darwin-arm64': 3.3.3
+      '@vierofernando/decancer-darwin-x64': 3.3.3
+      '@vierofernando/decancer-freebsd-x64': 3.3.3
+      '@vierofernando/decancer-linux-arm-gnueabihf': 3.3.3
+      '@vierofernando/decancer-linux-arm64-gnu': 3.3.3
+      '@vierofernando/decancer-linux-arm64-musl': 3.3.3
+      '@vierofernando/decancer-linux-x64-gnu': 3.3.3
+      '@vierofernando/decancer-linux-x64-musl': 3.3.3
+      '@vierofernando/decancer-win32-arm64-msvc': 3.3.3
+      '@vierofernando/decancer-win32-ia32-msvc': 3.3.3
+      '@vierofernando/decancer-win32-x64-msvc': 3.3.3
 
   decompress-response@6.0.0:
     dependencies:
