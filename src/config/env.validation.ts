@@ -7,6 +7,11 @@ export const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   THROTTLE_TTL: z.coerce.number().int().positive().default(60000),
   THROTTLE_LIMIT: z.coerce.number().int().positive().default(100),
+  THROTTLE_MINUTE_LIMIT: z.coerce.number().int().positive().default(10),
+  THROTTLE_HOUR_TTL: z.coerce.number().int().positive().default(3_600_000),
+  THROTTLE_HOUR_LIMIT: z.coerce.number().int().positive().default(100),
+  REDIS_URL: z.string().url().optional(),
+  CACHE_TTL: z.coerce.number().int().positive().default(300_000),
   FRONTEND_URL: z.string().url().optional(),
 });
 

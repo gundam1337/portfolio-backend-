@@ -1,6 +1,5 @@
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
-import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import {
@@ -8,15 +7,46 @@ import {
   type NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Logger } from 'nestjs-pino';
+import type { IncomingMessage } from 'node:http';
+import { v4 as uuidv4 } from 'uuid';
 import { AppModule } from './app.module';
 import type { Env } from './config/env.validation';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({ logger: true }),
+    new FastifyAdapter({
+      // nestjs-pino owns all logging — Fastify's built-in pino is disabled
+      logger: false,
+      // Render sits behind a load balancer; this makes req.ip reflect the real
+      // client IP from X-Forwarded-For rather than the proxy's address
+      trustProxy: true,
+      // Override Fastify's default integer request IDs with UUIDs so every
+      // log line and response header carries a globally unique trace ID.
+      // Reuses an upstream X-Request-ID header when present (proxy / service mesh).
+      genReqId: (req: IncomingMessage): string => {
+        const upstream = req.headers['x-request-id'];
+        return typeof upstream === 'string' && upstream.length > 0
+          ? upstream
+          : uuidv4();
+      },
+    }),
+    // Buffer early bootstrap logs until the pino logger is wired below
     { bufferLogs: true },
   );
+
+  // Wire nestjs-pino as the NestJS application logger.
+  // Must be called immediately after create() so buffered logs are flushed.
+  app.useLogger(app.get(Logger));
+
+  // Set X-Request-ID on every response so clients can correlate by trace ID.
+  // onSend fires after the route handler but before bytes hit the wire.
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const fastify = app.getHttpAdapter().getInstance();
+  fastify.addHook('onSend', async (request, reply) => {
+    void reply.header('X-Request-ID', request.id);
+  });
 
   const config = app.get(ConfigService<Env, true>);
   const port = config.get('PORT', { infer: true });
@@ -39,7 +69,12 @@ async function bootstrap(): Promise<void> {
   SwaggerModule.setup('docs', app, document);
 
   await app.listen(port, '0.0.0.0');
-  Logger.log(`Listening on http://localhost:${port} — docs at /docs`, 'Bootstrap');
+  app
+    .get(Logger)
+    .log(
+      `Listening on http://localhost:${port} — docs at /docs`,
+      'Bootstrap',
+    );
 }
 
 void bootstrap();
