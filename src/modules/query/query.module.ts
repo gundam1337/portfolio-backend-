@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EmbeddingModule } from '../embedding/embedding.module';
 import { QueryRewriterModule } from '../query-rewriter/query-rewriter.module';
 import { SessionModule } from '../../shared/session/session.module';
 import { InputGuardService } from './input-guard.service';
@@ -10,6 +11,7 @@ import { QueryService } from './query.service';
   imports: [
     SessionModule,
     QueryRewriterModule,
+    EmbeddingModule,
   ],
   controllers: [QueryController],
   // SanitizationPipe must be in providers so NestJS can inject PinoLogger
