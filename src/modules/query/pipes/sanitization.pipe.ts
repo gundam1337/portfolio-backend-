@@ -4,7 +4,7 @@ import {
   Injectable,
   PipeTransform,
 } from '@nestjs/common';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 import decancer from 'decancer';
 import type { QueryRequestDto } from '../dto/query-request.dto';
 
@@ -53,10 +53,9 @@ export function sanitizeQuestion(raw: string): string {
  */
 @Injectable()
 export class SanitizationPipe implements PipeTransform<QueryRequestDto, QueryRequestDto> {
-  constructor(
-    @InjectPinoLogger(SanitizationPipe.name)
-    private readonly logger: PinoLogger,
-  ) {}
+  constructor(private readonly logger: PinoLogger) {
+    this.logger.setContext(SanitizationPipe.name);
+  }
 
   transform(value: QueryRequestDto, _metadata: ArgumentMetadata): QueryRequestDto {
     const raw = value.question;

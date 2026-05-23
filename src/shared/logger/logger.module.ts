@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
 
 const LOKI_URL = process.env.LOKI_URL ?? 'http://localhost:3100';
 
+@Global()
 @Module({
   imports: [
     PinoLoggerModule.forRootAsync({
@@ -20,10 +21,8 @@ const LOKI_URL = process.env.LOKI_URL ?? 'http://localhost:3100';
                   options: {
                     host: LOKI_URL,
                     labels: { app: 'nestjs-portfolio', env: 'development' },
-                    // Batch up to 10 log lines or flush every second, whichever comes first.
-                    // Keeps HTTP overhead low without delaying visibility in Grafana.
-                    batching: true,
-                    interval: 1,
+                    batching: false,
+                    silenceErrors: false,
                   },
                 },
               ],

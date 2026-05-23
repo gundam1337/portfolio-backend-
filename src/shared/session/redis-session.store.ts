@@ -1,5 +1,5 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { Inject, Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 import type Redis from 'ioredis';
 import { REDIS_CLIENT } from '../redis/redis.constants';
 import { SessionStore } from './session.store';
@@ -15,10 +15,10 @@ const SESSION_TTL_SECONDS = 3600;
 export class RedisSessionStore extends SessionStore {
   constructor(
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
-    @InjectPinoLogger(RedisSessionStore.name)
     private readonly logger: PinoLogger,
   ) {
     super();
+    this.logger.setContext(RedisSessionStore.name);
   }
 
   private key(sessionId: string): string {

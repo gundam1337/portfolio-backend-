@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 import { v4 as uuidv4 } from 'uuid';
 import { SessionStore } from './session.store';
 import type { Message, Session } from './session.types';
@@ -12,9 +12,10 @@ const MAX_HISTORY = 10;
 export class SessionService {
   constructor(
     private readonly store: SessionStore,
-    @InjectPinoLogger(SessionService.name)
     private readonly logger: PinoLogger,
-  ) {}
+  ) {
+    this.logger.setContext(SessionService.name);
+  }
 
   // ─── Public API ───────────────────────────────────────────────────────────
 

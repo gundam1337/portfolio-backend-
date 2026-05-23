@@ -6,7 +6,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 import OpenAI from 'openai';
 import type Redis from 'ioredis';
 import type { Env } from '../../config/env.validation';
@@ -26,10 +26,10 @@ export class EmbeddingService {
   constructor(
     @Inject(OPENAI_CLIENT) private readonly openai: OpenAI,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
-    @InjectPinoLogger(EmbeddingService.name)
     private readonly logger: PinoLogger,
     config: ConfigService<Env, true>,
   ) {
+    this.logger.setContext(EmbeddingService.name);
     this.model = config.get('OPENAI_EMBEDDING_MODEL', { infer: true });
     this.dimensions = config.get('OPENAI_EMBEDDING_DIMENSIONS', { infer: true });
   }

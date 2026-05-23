@@ -1,27 +1,27 @@
 {
   "project": {
-    "description": "Portfolio personnel mettant en valeur des projets full-stack et des expérimentations."
+    "description": "Un portfolio moderne et performant construit avec les dernières technologies web."
   },
   "author": {
-    "role": "Développeur Full Stack"
+    "role": "Développeur Full-Stack"
   },
   "features": {
     "responsiveDesign": {
       "title": "Design Responsive",
-      "description": "Optimisé pour les ordinateurs, tablettes et appareils mobiles."
+      "description": "Mise en page entièrement responsive, parfaite sur tous les appareils et tailles d'écran."
     },
     "seoOptimized": {
-      "title": "SEO Optimisé",
-      "description": "Métadonnées, OpenGraph et optimisation des performances."
+      "title": "Optimisé SEO",
+      "description": "Construit avec les meilleures pratiques SEO pour maximiser la visibilité."
     },
     "animations": {
-      "title": "Animations",
-      "description": "Interactions fluides grâce à Framer Motion."
+      "title": "Animations Fluides",
+      "description": "Animations et transitions fluides propulsées par Framer Motion."
     }
   },
   "futurePlans": {
-    "blog": "Ajouter un système de blog",
-    "adminDashboard": "Ajouter un tableau de bord administrateur",
-    "multilingualSupport": "Ajouter le support multilingue"
+    "blog": "Ajouter un blog technique avec support MDX",
+    "adminDashboard": "Construire un tableau de bord admin pour la gestion du contenu",
+    "multilingualSupport": "Étendre le support multilingue avec plus de langues"
   }
 }

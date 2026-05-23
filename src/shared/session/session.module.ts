@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { LoggerModule } from '../logger/logger.module';
 import { RedisModule } from '../redis/redis.module';
 import { RedisSessionStore } from './redis-session.store';
 import { SessionService } from './session.service';
@@ -6,8 +7,8 @@ import { SessionStore } from './session.store';
 
 @Module({
   imports: [
-    // RedisModule exports the REDIS_CLIENT token that RedisSessionStore injects
     RedisModule,
+    LoggerModule,
   ],
   providers: [
     // Bind the abstract token to its concrete Redis-backed implementation.

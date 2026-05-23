@@ -20,7 +20,7 @@
         "name": "level",
         "label": "Log Level",
         "type": "custom",
-        "current": { "value": "error", "text": "error" },
+        "current": { "value": "", "text": "All" },
         "options": [
           { "value": "", "text": "All" },
           { "value": "debug", "text": "debug" },
@@ -97,7 +97,7 @@
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "{app=\"nestjs-portfolio\"} ${level:pipe} |= \"${search}\" | json",
+          "expr": "{app=\"nestjs-portfolio\", level=~\"${level:raw}.*\"} |= \"${search}\" | json",
           "refId": "A"
         }
       ],

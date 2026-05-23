@@ -7,7 +7,7 @@ import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { Keyv } from 'keyv';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
-import { LoggerModule } from 'nestjs-pino';
+import { LoggerModule as AppLoggerModule } from './shared/logger/logger.module';
 import * as path from 'path';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { CustomThrottlerGuard } from './common/guards/throttler.guard';
@@ -23,37 +23,7 @@ import { QueryModule } from './modules/query/query.module';
       cache: true,
       validate: validateEnv,
     }),
-    LoggerModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService<Env, true>) => {
-        const isProd = config.get('NODE_ENV', { infer: true }) === 'production';
-        return {
-          pinoHttp: {
-            level: isProd ? 'info' : 'debug',
-            // pino-pretty for human-readable local logs; raw JSON in production
-            // so log aggregators (Datadog, CloudWatch, Loki) can parse it
-            transport: isProd
-              ? undefined
-              : {
-                  target: 'pino-pretty',
-                  options: { colorize: true, singleLine: true },
-                },
-            // Pull request.id (set via genReqId in main.ts) into every log line
-            customProps: (req: import('http').IncomingMessage & { id?: string }) => ({
-              requestId: req.id,
-            }),
-            autoLogging: true,
-            serializers: {
-              req: (req: Record<string, unknown>) => ({
-                id: req['id'],
-                method: req['method'],
-                url: req['url'],
-              }),
-            },
-          },
-        };
-      },
-    }),
+    AppLoggerModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) => {

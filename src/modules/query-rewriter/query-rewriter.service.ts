@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { PinoLogger } from 'nestjs-pino';
 import OpenAI from 'openai';
 import type { Env } from '../../config/env.validation';
 import { OPENAI_CLIENT } from '../../shared/openai/openai.constants';
@@ -64,10 +64,10 @@ export class QueryRewriterService {
 
   constructor(
     @Inject(OPENAI_CLIENT) private readonly openai: OpenAI,
-    @InjectPinoLogger(QueryRewriterService.name)
     private readonly logger: PinoLogger,
     config: ConfigService<Env, true>,
   ) {
+    this.logger.setContext(QueryRewriterService.name);
     this.model = config.get('OPENAI_REWRITER_MODEL', { infer: true });
   }
 

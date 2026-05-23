@@ -9,12 +9,14 @@ import { REDIS_CLIENT } from './redis.constants';
 // and is independently testable without instantiating the module.
 function createRedisClient(url: string): Redis {
   const client = new Redis(url, {
-    // Don't let a momentary Redis hiccup crash the process — ioredis will
-    // keep retrying on its own schedule.  We surface errors via the 'error'
-    // event listener below instead.
     lazyConnect: false,
-    // Disconnect cleanly rather than hanging the process on SIGTERM
     enableReadyCheck: true,
+    // Fail fast: if Redis is unreachable, surface an error immediately
+    // instead of queuing commands indefinitely and hanging the request.
+    connectTimeout: 3_000,
+    // 0 = do not retry failed commands while disconnected — throw immediately
+    // so the caller gets a 503 rather than a silent hang.
+    maxRetriesPerRequest: 0,
   });
 
   const logger = new Logger('RedisClient');
