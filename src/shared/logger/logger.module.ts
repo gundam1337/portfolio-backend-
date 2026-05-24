@@ -21,6 +21,7 @@ const LOKI_URL = process.env.LOKI_URL ?? 'http://localhost:3100';
                   options: {
                     host: LOKI_URL,
                     labels: { app: 'nestjs-portfolio', env: 'development' },
+                    labelKeys: ['level', 'context'],
                     batching: false,
                     silenceErrors: false,
                   },

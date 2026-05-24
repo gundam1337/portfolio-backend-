@@ -26,6 +26,11 @@ export const envSchema = z.object({
     .int()
     .positive({ message: 'OPENAI_EMBEDDING_DIMENSIONS must be a positive integer' })
     .default(3072),
+  // Qdrant vector database — required for RAG indexing (Step I1+) and runtime search.
+  // App refuses to start without these so misconfiguration surfaces immediately.
+  QDRANT_URL: z.string().url({ message: 'QDRANT_URL must be a valid URL (e.g. https://your-cluster-id.qdrant.io)' }),
+  QDRANT_API_KEY: z.string().min(1, { message: 'QDRANT_API_KEY is required' }),
+  QDRANT_COLLECTION: z.string().default('personal_docs'),
 });
 
 export type Env = z.infer<typeof envSchema>;
