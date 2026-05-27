@@ -9,25 +9,25 @@ const LOKI_URL = process.env.LOKI_URL ?? 'http://localhost:3100';
     PinoLoggerModule.forRootAsync({
       useFactory: () => {
         const transport = {
-              targets: [
-                {
-                  target: 'pino-pretty',
-                  level: 'debug',
-                  options: { colorize: true, singleLine: true },
-                },
-                {
-                  target: 'pino-loki',
-                  level: 'debug',
-                  options: {
-                    host: LOKI_URL,
-                    labels: { app: 'nestjs-portfolio', env: 'development' },
-                    labelKeys: ['level', 'context'],
-                    batching: false,
-                    silenceErrors: false,
-                  },
-                },
-              ],
-            };
+          targets: [
+            {
+              target: 'pino-pretty',
+              level: 'debug',
+              options: { colorize: true, singleLine: true },
+            },
+            {
+              target: 'pino-loki',
+              level: 'debug',
+              options: {
+                host: LOKI_URL,
+                labels: { app: 'nestjs-portfolio', env: 'development' },
+                labelKeys: ['level', 'context'],
+                batching: false,
+                silenceErrors: true,
+              },
+            },
+          ],
+        };
 
         return {
           pinoHttp: {

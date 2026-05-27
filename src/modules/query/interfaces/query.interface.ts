@@ -6,8 +6,24 @@ export interface EmbeddingMeta {
   dimensions: number;
   cached: boolean;
   durationMs: number;
-  /** First 5 values of the embedding vector — for debugging only. */
-  preview: number[];
+}
+
+export interface RetrievalTopResult {
+  score: number;
+  sourceFile: string;
+  headingPath: string[] | null;
+  pageNumber: number | null;
+  preview: string;
+}
+
+export interface RetrievalMeta {
+  count: number;
+  topScore: number | null;
+  lowestScore: number | null;
+  lowConfidence: boolean;
+  durationMs: number;
+  /** First 5 results with preview text truncated to 200 chars — primary debug surface. */
+  topResults: RetrievalTopResult[];
 }
 
 export interface QueryResponse {
@@ -18,6 +34,7 @@ export interface QueryResponse {
   rewriteUsed: boolean;
   fallbackReason: FallbackReason | null;
   embedding: EmbeddingMeta;
+  retrieval: RetrievalMeta;
   // Last ≤10 messages, oldest first.
   history: Message[];
 }

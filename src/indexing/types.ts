@@ -1,7 +1,7 @@
 // Shared payload types for all Qdrant indexing scripts and the runtime search step.
 // This file is type-only — it compiles to nothing at runtime.
 
-export type SourceType = 'markdown';
+export type SourceType = 'markdown' | 'pdf';
 
 export interface ChunkPayload {
   text: string;

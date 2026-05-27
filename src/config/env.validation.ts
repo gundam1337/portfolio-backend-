@@ -31,6 +31,16 @@ export const envSchema = z.object({
   QDRANT_URL: z.string().url({ message: 'QDRANT_URL must be a valid URL (e.g. https://your-cluster-id.qdrant.io)' }),
   QDRANT_API_KEY: z.string().min(1, { message: 'QDRANT_API_KEY is required' }),
   QDRANT_COLLECTION: z.string().default('personal_docs'),
+  RETRIEVAL_TOP_K: z.coerce
+    .number()
+    .int()
+    .positive({ message: 'RETRIEVAL_TOP_K must be a positive integer' })
+    .default(15),
+  RETRIEVAL_SCORE_FLOOR: z.coerce
+    .number()
+    .min(0, { message: 'RETRIEVAL_SCORE_FLOOR must be >= 0' })
+    .max(1, { message: 'RETRIEVAL_SCORE_FLOOR must be <= 1' })
+    .default(0.3),
 });
 
 export type Env = z.infer<typeof envSchema>;
