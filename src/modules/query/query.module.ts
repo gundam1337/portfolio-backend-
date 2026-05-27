@@ -5,6 +5,7 @@ import { SessionModule } from '../../shared/session/session.module';
 import { RetrievalModule } from '../retrieval/retrieval.module';
 import { RerankerModule } from '../reranking/reranker.module';
 import { PromptModule } from '../prompt/prompt.module';
+import { LlmModule } from '../llm/llm.module';
 import { InputGuardService } from './input-guard.service';
 import { SanitizationPipe } from './pipes/sanitization.pipe';
 import { QueryController } from './query.controller';
@@ -18,6 +19,7 @@ import { QueryService } from './query.service';
     RetrievalModule,
     RerankerModule,
     PromptModule,
+    LlmModule,
   ],
   controllers: [QueryController],
   providers: [QueryService, InputGuardService, SanitizationPipe],

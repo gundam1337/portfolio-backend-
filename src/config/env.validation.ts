@@ -20,6 +20,7 @@ export const envSchema = z.object({
   // Missing OPENAI_API_KEY will fail fast at startup before any request is served.
   OPENAI_API_KEY: z.string().min(1, { message: 'OPENAI_API_KEY is required' }),
   OPENAI_REWRITER_MODEL: z.string().default('gpt-4o-mini'),
+  OPENAI_CHAT_MODEL: z.string().default('gpt-4o-mini'),
   OPENAI_EMBEDDING_MODEL: z.string().default('text-embedding-3-large'),
   OPENAI_EMBEDDING_DIMENSIONS: z.coerce
     .number()

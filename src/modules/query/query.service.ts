@@ -1,5 +1,5 @@
+import * as path from 'path';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PinoLogger } from 'nestjs-pino';
 import { QueryRewriterService } from '../query-rewriter/query-rewriter.service';
 import { EmbeddingService } from '../embedding/embedding.service';
@@ -7,16 +7,19 @@ import { SessionService } from '../../shared/session/session.service';
 import { RetrievalService } from '../retrieval/retrieval.service';
 import { RerankerService } from '../reranking/reranker.service';
 import { PromptBuilderService } from '../prompt/prompt-builder.service';
-import type { Env } from '../../config/env.validation';
+import { LlmService } from '../llm/llm.service';
+import type { RerankedChunk } from '../reranking/reranker.types';
 import type { QueryRequestDto } from './dto/query-request.dto';
-import type { QueryResponse } from './interfaces/query.interface';
+import type {
+  ConfidenceMeta,
+  QueryResponse,
+  SourceItem,
+} from './interfaces/query.interface';
 
 const PREVIEW_MAX_CHARS = 200;
 
 @Injectable()
 export class QueryService {
-  private readonly rerankTopN: number;
-
   constructor(
     private readonly logger: PinoLogger,
     private readonly sessionService: SessionService,
@@ -25,10 +28,9 @@ export class QueryService {
     private readonly retrievalService: RetrievalService,
     private readonly rerankerService: RerankerService,
     private readonly promptBuilder: PromptBuilderService,
-    config: ConfigService<Env, true>,
+    private readonly llmService: LlmService,
   ) {
     this.logger.setContext(QueryService.name);
-    this.rerankTopN = config.get('RERANK_TOP_N', { infer: true });
   }
 
   async process(dto: QueryRequestDto, requestId: string): Promise<QueryResponse> {
@@ -63,12 +65,9 @@ export class QueryService {
       requestId,
     });
 
-    // Final low-confidence mode: either retrieval signaled it, or reranker returned nothing
     const lowConfidenceMode = retrieval.lowConfidence || rerank.chunks.length === 0;
 
     // Step 11: Prompt construction
-    // Pass historyBeforeAppend excluding nothing — session.messages already has the new user
-    // message appended so we slice to exclude it and only keep prior history.
     const prompt = this.promptBuilder.build({
       originalQuestion: dto.question,
       rerankedChunks: rerank.chunks,
@@ -77,57 +76,65 @@ export class QueryService {
       requestId,
     });
 
-    // TODO Step 12: send prompt.messages to OpenAI chat completions and stream the answer
+    // Step 12: LLM answer
+    const llmResult = await this.llmService.complete(prompt.messages, requestId);
 
-    const history = await this.sessionService.getRecentHistory(session.id);
+    // Step 13: Follow-up suggestions
+    const suggestions = await this.llmService.suggestFollowUps(dto.question, llmResult.text, requestId);
+
+    // Step 14: Persist assistant message
+    await this.sessionService.appendAssistantMessage(session.id, llmResult.text);
 
     this.logger.info({ requestId, sessionId: session.id }, 'query_processed');
+
+    const topRerankerScore = rerank.chunks[0]?.rerankerScore ?? null;
 
     return {
       requestId,
       conversationId: session.id,
-      originalQuestion: dto.question,
-      rewrittenQuestion: rewriteResult.rewrittenQuestion,
-      rewriteUsed: rewriteResult.rewriteUsed,
-      fallbackReason: rewriteResult.fallbackReason,
-      embedding: {
-        model: embedResult.model,
-        dimensions: embedResult.dimensions,
-        cached: embedResult.cached,
-        durationMs: embedResult.durationMs,
+      answer: {
+        text: llmResult.text,
+        format: 'markdown',
       },
-      retrieval: {
-        count: retrieval.chunks.length,
-        topScore: retrieval.topScore,
-        lowestScore: retrieval.lowestScore,
-        lowConfidence: retrieval.lowConfidence,
-        durationMs: retrieval.durationMs,
-      },
-      reranking: {
-        used: rerank.used,
-        model: rerank.model,
-        topN: this.rerankTopN,
-        durationMs: rerank.durationMs,
-        fallbackReason: rerank.fallbackReason,
-        topResults: rerank.chunks.map((c) => ({
-          rerankerScore: c.rerankerScore,
-          vectorScore: c.vectorScore,
-          sourceFile: c.sourceFile,
-          headingPath: c.headingPath ?? null,
-          pageNumber: c.pageNumber ?? null,
-          preview: c.text.slice(0, PREVIEW_MAX_CHARS),
-        })),
-      },
-      prompt: {
-        totalTokens: prompt.totalTokens,
-        systemTokens: prompt.systemTokens,
-        historyTokens: prompt.historyTokens,
-        contextTokens: prompt.contextTokens,
-        userTokens: prompt.userTokens,
-        lowConfidenceMode: prompt.lowConfidenceMode,
-        sourcesIncluded: prompt.sourcesIncluded,
-      },
-      history,
+      confidence: this.deriveConfidence(topRerankerScore, lowConfidenceMode, rerank.chunks[0]),
+      sources: this.buildSources(rerank.chunks),
+      suggestions,
+      status: lowConfidenceMode ? 'low_confidence' : 'answered',
     };
+  }
+
+  // ─── Private helpers ──────────────────────────────────────────────────────
+
+  private deriveConfidence(
+    topRerankerScore: number | null,
+    lowConfidenceMode: boolean,
+    topChunk: RerankedChunk | undefined,
+  ): ConfidenceMeta {
+    if (lowConfidenceMode || topRerankerScore === null) {
+      return { level: 'low', reason: "No sufficiently relevant content found in Omar's portfolio." };
+    }
+    if (topRerankerScore > 0.7) {
+      return { level: 'high', reason: "The answer was generated from highly relevant content in Omar's portfolio." };
+    }
+    if (topRerankerScore > 0.4) {
+      const section = topChunk?.headingPath?.at(-1);
+      const sourceFile = topChunk ? path.basename(topChunk.sourceFile) : 'the portfolio';
+      const reason = section
+        ? `The answer was generated from Omar's CV, mainly the ${section} section.`
+        : `The answer was generated from ${sourceFile}.`;
+      return { level: 'medium', reason };
+    }
+    return { level: 'low', reason: 'Content found but relevance is limited.' };
+  }
+
+  private buildSources(chunks: RerankedChunk[]): SourceItem[] {
+    return chunks.map((chunk, i) => ({
+      id: `source_${i + 1}`,
+      title: path.basename(chunk.sourceFile),
+      type: chunk.sourceType,
+      section: chunk.headingPath?.at(-1) ?? null,
+      pageNumber: chunk.pageNumber ?? null,
+      preview: chunk.text.slice(0, PREVIEW_MAX_CHARS),
+    }));
   }
 }
