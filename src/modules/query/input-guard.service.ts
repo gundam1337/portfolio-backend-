@@ -1,4 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  QUERY_MAX_NON_ALPHANUMERIC_RATIO,
+  QUERY_QUESTION_MIN_LENGTH,
+} from './query-validation.constants';
 
 // Matches any Unicode letter.  The \p{L} category covers all scripts
 // (Latin, Arabic, CJK, Cyrillic, …), not just ASCII [a-zA-Z].
@@ -29,15 +33,15 @@ export class InputGuardService {
    * Returns void on success — the caller just continues.
    */
   validateQuestion(question: string): void {
-    // Re-check length here even though MinLength(3) runs on the raw string.
+    // Re-check length here even though MinLength(...) runs on the raw string.
     // SanitizationPipe can shorten the string (e.g. a 5-char string of
     // zero-width chars collapses to ""), but SanitizationPipe already throws
     // for the empty case.  This check catches the 1–2 char post-sanitization
-    // edge cases that slipped through the DTO's raw-string MinLength(3).
-    if (question.length < 3) {
+    // edge cases that slipped through the DTO's raw-string MinLength(...).
+    if (question.length < QUERY_QUESTION_MIN_LENGTH) {
       throw new BadRequestException({
         error: 'question too short after sanitization',
-        detail: `minimum 3 characters required, got ${question.length}`,
+        detail: `minimum ${QUERY_QUESTION_MIN_LENGTH} characters required, got ${question.length}`,
       });
     }
 
@@ -64,10 +68,10 @@ export class InputGuardService {
     ).length;
     const nonAlphanumericRatio = (totalChars - alphanumericCount) / totalChars;
 
-    if (nonAlphanumericRatio > 0.5) {
+    if (nonAlphanumericRatio > QUERY_MAX_NON_ALPHANUMERIC_RATIO) {
       throw new BadRequestException({
         error: 'question contains too many non-alphanumeric characters',
-        detail: `${Math.round(nonAlphanumericRatio * 100)}% of characters are symbols or punctuation (limit 50%)`,
+        detail: `${Math.round(nonAlphanumericRatio * 100)}% of characters are symbols or punctuation (limit ${Math.round(QUERY_MAX_NON_ALPHANUMERIC_RATIO * 100)}%)`,
       });
     }
   }

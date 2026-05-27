@@ -1,24 +1,28 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import {
+  QUERY_QUESTION_MAX_LENGTH,
+  QUERY_QUESTION_MIN_LENGTH,
+} from '../query-validation.constants';
 
 export class QueryRequestDto {
   @ApiProperty({
     description: 'The question to send to the RAG system',
-    minLength: 3,
-    maxLength: 2000,
+    minLength: QUERY_QUESTION_MIN_LENGTH,
+    maxLength: QUERY_QUESTION_MAX_LENGTH,
     example: 'What technologies does Omar use in his portfolio?',
   })
   // Trim happens during the class-transformer pass, which the global ValidationPipe
-  // (transform: true) runs BEFORE class-validator.  This means MinLength(3) sees the
+  // (transform: true) runs BEFORE class-validator.  This means MinLength(...) sees the
   // trimmed string — so "   " (three spaces) correctly fails with a min-length error
   // instead of passing as a 3-char string.
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim() : value,
   )
   @IsString()
-  @MinLength(3)
-  @MaxLength(2000)
+  @MinLength(QUERY_QUESTION_MIN_LENGTH)
+  @MaxLength(QUERY_QUESTION_MAX_LENGTH)
   question!: string;
 
   @ApiPropertyOptional({

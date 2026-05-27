@@ -80,7 +80,7 @@ export class SanitizationPipe implements PipeTransform<QueryRequestDto, QueryReq
     }
 
     if (clean.length === 0) {
-      // The field passed MinLength(3) on the raw bytes (e.g. three zero-width
+      // The field passed MinLength(...) on the raw bytes (e.g. invisible
       // spaces pass the byte-length check) but collapsed to "" after
       // sanitization.  Throw with a precise message so the caller understands
       // this is an invisible-character issue, not a missing field.
