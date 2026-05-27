@@ -40,7 +40,15 @@ export const envSchema = z.object({
     .number()
     .min(0, { message: 'RETRIEVAL_SCORE_FLOOR must be >= 0' })
     .max(1, { message: 'RETRIEVAL_SCORE_FLOOR must be <= 1' })
-    .default(0.3),
+    .default(0.2),
+  // Cohere — required for reranking (Step 9).
+  COHERE_API_KEY: z.string().min(1, { message: 'COHERE_API_KEY is required' }),
+  COHERE_RERANK_MODEL: z.string().default('rerank-v3.5'),
+  RERANK_TOP_N: z.coerce
+    .number()
+    .int()
+    .positive({ message: 'RERANK_TOP_N must be a positive integer' })
+    .default(5),
 });
 
 export type Env = z.infer<typeof envSchema>;

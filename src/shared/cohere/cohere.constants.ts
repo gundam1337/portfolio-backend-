@@ -1,0 +1,1 @@
+export const COHERE_CLIENT = 'COHERE_CLIENT';

@@ -1,25 +1,34 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PinoLogger } from 'nestjs-pino';
 import { QueryRewriterService } from '../query-rewriter/query-rewriter.service';
 import { EmbeddingService } from '../embedding/embedding.service';
 import { SessionService } from '../../shared/session/session.service';
 import { RetrievalService } from '../retrieval/retrieval.service';
+import { RerankerService } from '../reranking/reranker.service';
+import { PromptBuilderService } from '../prompt/prompt-builder.service';
+import type { Env } from '../../config/env.validation';
 import type { QueryRequestDto } from './dto/query-request.dto';
 import type { QueryResponse } from './interfaces/query.interface';
 
 const PREVIEW_MAX_CHARS = 200;
-const TOP_RESULTS_COUNT = 5;
 
 @Injectable()
 export class QueryService {
+  private readonly rerankTopN: number;
+
   constructor(
     private readonly logger: PinoLogger,
     private readonly sessionService: SessionService,
     private readonly queryRewriter: QueryRewriterService,
     private readonly embeddingService: EmbeddingService,
     private readonly retrievalService: RetrievalService,
+    private readonly rerankerService: RerankerService,
+    private readonly promptBuilder: PromptBuilderService,
+    config: ConfigService<Env, true>,
   ) {
     this.logger.setContext(QueryService.name);
+    this.rerankTopN = config.get('RERANK_TOP_N', { infer: true });
   }
 
   async process(dto: QueryRequestDto, requestId: string): Promise<QueryResponse> {
@@ -46,8 +55,29 @@ export class QueryService {
       requestId,
     });
 
-    // TODO Step 9+: reranking, prompt construction, and generation plug in here.
-    // `retrieval.chunks` holds all top-K chunks for downstream steps.
+    // Step 9: Reranking
+    const rerank = await this.rerankerService.rerank({
+      query: rewriteResult.rewrittenQuestion,
+      chunks: retrieval.chunks,
+      lowConfidence: retrieval.lowConfidence,
+      requestId,
+    });
+
+    // Final low-confidence mode: either retrieval signaled it, or reranker returned nothing
+    const lowConfidenceMode = retrieval.lowConfidence || rerank.chunks.length === 0;
+
+    // Step 11: Prompt construction
+    // Pass historyBeforeAppend excluding nothing — session.messages already has the new user
+    // message appended so we slice to exclude it and only keep prior history.
+    const prompt = this.promptBuilder.build({
+      originalQuestion: dto.question,
+      rerankedChunks: rerank.chunks,
+      conversationHistory: historyBeforeAppend,
+      lowConfidenceMode,
+      requestId,
+    });
+
+    // TODO Step 12: send prompt.messages to OpenAI chat completions and stream the answer
 
     const history = await this.sessionService.getRecentHistory(session.id);
 
@@ -72,13 +102,30 @@ export class QueryService {
         lowestScore: retrieval.lowestScore,
         lowConfidence: retrieval.lowConfidence,
         durationMs: retrieval.durationMs,
-        topResults: retrieval.chunks.slice(0, TOP_RESULTS_COUNT).map((chunk) => ({
-          score: chunk.score,
-          sourceFile: chunk.sourceFile,
-          headingPath: chunk.headingPath ?? null,
-          pageNumber: chunk.pageNumber ?? null,
-          preview: chunk.text.slice(0, PREVIEW_MAX_CHARS),
+      },
+      reranking: {
+        used: rerank.used,
+        model: rerank.model,
+        topN: this.rerankTopN,
+        durationMs: rerank.durationMs,
+        fallbackReason: rerank.fallbackReason,
+        topResults: rerank.chunks.map((c) => ({
+          rerankerScore: c.rerankerScore,
+          vectorScore: c.vectorScore,
+          sourceFile: c.sourceFile,
+          headingPath: c.headingPath ?? null,
+          pageNumber: c.pageNumber ?? null,
+          preview: c.text.slice(0, PREVIEW_MAX_CHARS),
         })),
+      },
+      prompt: {
+        totalTokens: prompt.totalTokens,
+        systemTokens: prompt.systemTokens,
+        historyTokens: prompt.historyTokens,
+        contextTokens: prompt.contextTokens,
+        userTokens: prompt.userTokens,
+        lowConfidenceMode: prompt.lowConfidenceMode,
+        sourcesIncluded: prompt.sourcesIncluded,
       },
       history,
     };
