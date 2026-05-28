@@ -21,8 +21,8 @@ function createRedisClient(url: string): Redis {
 
   const logger = new Logger('RedisClient');
 
-  client.on('connect', () => logger.log('Redis connection established'));
-  client.on('ready', () => logger.log('Redis client ready'));
+  client.on('connect', () => logger.debug('Redis connection established'));
+  client.on('ready', () => logger.debug('Redis client ready'));
   // Log but don't rethrow — ioredis auto-reconnects; a single error shouldn't
   // crash the app.  The global AllExceptionsFilter will catch any
   // downstream failures that bubble up through request handlers.
@@ -64,7 +64,7 @@ export class RedisModule implements OnModuleDestroy {
     const client = this.moduleRef.get<Redis>(REDIS_CLIENT, { strict: false });
     if (client) {
       await client.quit();
-      this.logger.log('Redis client disconnected (module destroy)');
+      this.logger.debug('Redis client disconnected (module destroy)');
     }
   }
 }

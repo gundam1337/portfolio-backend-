@@ -94,7 +94,7 @@ export class PromptBuilderService {
     const userTokens = countTokens(userContent);
     const totalTokens = systemTokens + historyTokens + userTokens;
 
-    this.logger.info(
+    this.logger.debug(
       {
         requestId,
         lowConfidenceMode,

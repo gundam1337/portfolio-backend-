@@ -68,7 +68,7 @@ export class SanitizationPipe implements PipeTransform<QueryRequestDto, QueryReq
       // indicates automated invisible-character probing to test whether the
       // filter can be bypassed.  This structured line is queryable in any
       // log aggregator (Datadog, CloudWatch, Loki).
-      this.logger.info(
+      this.logger.debug(
         {
           event: 'input_sanitized',
           rawLength: raw.length,

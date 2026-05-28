@@ -7,7 +7,7 @@
     "build": "nest build && mkdir -p dist/src/i18n && cp -r src/i18n/. dist/src/i18n",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "mkdir -p dist/src/i18n && cp -r src/i18n/. dist/src/i18n && nest start --watch",
+    "start:dev": "rm -rf dist && nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",

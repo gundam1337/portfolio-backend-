@@ -23,7 +23,7 @@ export class SessionService {
     if (conversationId) {
       const existing = await this.store.get(conversationId);
       if (existing) {
-        this.logger.info(
+        this.logger.debug(
           { sessionId: existing.id, messageCount: existing.messages.length },
           'session_loaded',
         );
@@ -32,7 +32,7 @@ export class SessionService {
       // The ID was provided but not found in the store — either it expired or
       // it was never valid.  Create a fresh session rather than erroring so
       // the caller always gets a usable session back.
-      this.logger.info(
+      this.logger.debug(
         { sessionId: conversationId },
         'session_created: reason=expired_or_missing',
       );
@@ -40,7 +40,7 @@ export class SessionService {
 
     const session = this.createEmptySession();
     await this.store.save(session);
-    this.logger.info(
+    this.logger.debug(
       { sessionId: session.id },
       conversationId
         ? 'session_created: reason=expired_or_missing'
@@ -117,7 +117,7 @@ export class SessionService {
     await this.store.save(session);
 
     // Privacy: never log message content
-    this.logger.info(
+    this.logger.debug(
       { sessionId, role, totalMessages: session.messages.length },
       'message_appended',
     );

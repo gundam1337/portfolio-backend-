@@ -75,7 +75,7 @@ export class QueryRewriterService {
     const { originalQuestion, history, requestId } = input;
     const startMs = Date.now();
 
-    this.logger.info(
+    this.logger.debug(
       { requestId, historyLength: history.length, originalLength: originalQuestion.length },
       'query_rewrite_started',
     );
@@ -120,13 +120,7 @@ export class QueryRewriterService {
 
       const durationMs = Date.now() - startMs;
       this.logger.info(
-        {
-          requestId,
-          rewriteUsed,
-          durationMs,
-          originalLength: originalQuestion.length,
-          rewrittenLength: rewrittenQuestion.length,
-        },
+        { requestId, rewriteUsed, durationMs, fallbackReason: null },
         'query_rewrite_completed',
       );
 

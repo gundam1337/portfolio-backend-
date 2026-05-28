@@ -36,7 +36,7 @@ export class LlmService {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), COMPLETE_TIMEOUT_MS);
 
-    this.logger.info({ requestId, model: this.model, messageCount: messages.length }, 'llm_complete_started');
+    this.logger.debug({ requestId, model: this.model, messageCount: messages.length }, 'llm_complete_started');
 
     try {
       const response = await this.openai.chat.completions.create(
@@ -50,7 +50,7 @@ export class LlmService {
 
       this.logger.info(
         { requestId, durationMs: Date.now() - startMs, promptTokens: usage?.prompt_tokens, completionTokens: usage?.completion_tokens },
-        'llm_complete_finished',
+        'answer_generated',
       );
 
       return {

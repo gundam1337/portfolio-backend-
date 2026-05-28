@@ -22,10 +22,10 @@ export interface SourceItem {
 
 export interface QueryResponse {
   requestId: string;
-  conversationId: string;
-  answer: AnswerMeta;
-  confidence: ConfidenceMeta;
-  sources: SourceItem[];
-  suggestions: string[];
-  status: QueryStatus;
+  conversationId?: string;
+  answer?: AnswerMeta;
+  confidence?: ConfidenceMeta;
+  sources?: SourceItem[];
+  suggestions?: string[];
+  status?: QueryStatus;
 }

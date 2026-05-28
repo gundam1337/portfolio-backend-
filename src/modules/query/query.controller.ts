@@ -16,8 +16,8 @@ import {
   ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
 import { QueryRequestDto } from './dto/query-request.dto';
-import { InputGuardService } from './input-guard.service';
-import { SanitizationPipe } from './pipes/sanitization.pipe';
+import { InputGuardService } from './input-guard.service'; // that is Over-engineering
+import { SanitizationPipe } from './pipes/sanitization.pipe'; // another over-engineering 
 import { QueryService } from './query.service';
 import type { QueryResponse } from './interfaces/query.interface';
 

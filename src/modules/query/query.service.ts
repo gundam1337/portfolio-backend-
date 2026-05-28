@@ -30,7 +30,6 @@ export class QueryService {
     private readonly promptBuilder: PromptBuilderService,
     private readonly llmService: LlmService,
   ) {
-    this.logger.setContext(QueryService.name);
   }
 
   async process(dto: QueryRequestDto, requestId: string): Promise<QueryResponse> {
@@ -46,60 +45,59 @@ export class QueryService {
     });
 
     // Step 5: Embedding
-    const embedResult = await this.embeddingService.embed({
-      text: rewriteResult.rewrittenQuestion,
-      requestId,
-    });
+    // const embedResult = await this.embeddingService.embed({
+    //   text: rewriteResult.rewrittenQuestion,
+    //   requestId,
+    // });
 
     // Step 7: Vector search
-    const retrieval = await this.retrievalService.search({
-      queryVector: embedResult.vector,
-      requestId,
-    });
+    // const retrieval = await this.retrievalService.search({
+    //   queryVector: embedResult.vector,
+    //   requestId,
+    // });
 
     // Step 9: Reranking
-    const rerank = await this.rerankerService.rerank({
-      query: rewriteResult.rewrittenQuestion,
-      chunks: retrieval.chunks,
-      lowConfidence: retrieval.lowConfidence,
-      requestId,
-    });
+    // const rerank = await this.rerankerService.rerank({
+    //   query: rewriteResult.rewrittenQuestion,
+    //   chunks: retrieval.chunks,
+    //   lowConfidence: retrieval.lowConfidence,
+    //   requestId,
+    // });
 
-    const lowConfidenceMode = retrieval.lowConfidence || rerank.chunks.length === 0;
+    // const lowConfidenceMode = retrieval.lowConfidence || rerank.chunks.length === 0;
 
     // Step 11: Prompt construction
-    const prompt = this.promptBuilder.build({
-      originalQuestion: dto.question,
-      rerankedChunks: rerank.chunks,
-      conversationHistory: historyBeforeAppend,
-      lowConfidenceMode,
-      requestId,
-    });
+    // const prompt = this.promptBuilder.build({
+    //   originalQuestion: dto.question,
+    //   rerankedChunks: rerank.chunks,
+    //   conversationHistory: historyBeforeAppend,
+    //   lowConfidenceMode,
+    //   requestId,
+    // });
 
     // Step 12: LLM answer
-    const llmResult = await this.llmService.complete(prompt.messages, requestId);
+    // const llmResult = await this.llmService.complete(prompt.messages, requestId);
 
     // Step 13: Follow-up suggestions
-    const suggestions = await this.llmService.suggestFollowUps(dto.question, llmResult.text, requestId);
+    // const suggestions = await this.llmService.suggestFollowUps(dto.question, llmResult.text, requestId);
 
     // Step 14: Persist assistant message
-    await this.sessionService.appendAssistantMessage(session.id, llmResult.text);
+    // await this.sessionService.appendAssistantMessage(session.id, llmResult.text);
 
-    this.logger.info({ requestId, sessionId: session.id }, 'query_processed');
 
-    const topRerankerScore = rerank.chunks[0]?.rerankerScore ?? null;
+    // const topRerankerScore = rerank.chunks[0]?.rerankerScore ?? null;
 
     return {
       requestId,
-      conversationId: session.id,
-      answer: {
-        text: llmResult.text,
-        format: 'markdown',
-      },
-      confidence: this.deriveConfidence(topRerankerScore, lowConfidenceMode, rerank.chunks[0]),
-      sources: this.buildSources(rerank.chunks),
-      suggestions,
-      status: lowConfidenceMode ? 'low_confidence' : 'answered',
+      // conversationId: session.id,
+      // answer: {
+      //   text: llmResult.text,
+      //   format: 'markdown',
+      // },
+      // confidence: this.deriveConfidence(topRerankerScore, lowConfidenceMode, rerank.chunks[0]),
+      // sources: this.buildSources(rerank.chunks),
+      // suggestions,
+      // status: lowConfidenceMode ? 'low_confidence' : 'answered',
     };
   }
 

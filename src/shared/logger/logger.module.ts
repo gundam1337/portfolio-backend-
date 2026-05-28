@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
 
 const LOKI_URL = process.env.LOKI_URL ?? 'http://localhost:3100';
+const LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
 
 @Global()
 @Module({
@@ -12,12 +13,12 @@ const LOKI_URL = process.env.LOKI_URL ?? 'http://localhost:3100';
           targets: [
             {
               target: 'pino-pretty',
-              level: 'debug',
+              level: LOG_LEVEL,
               options: { colorize: true, singleLine: true },
             },
             {
               target: 'pino-loki',
-              level: 'debug',
+              level: LOG_LEVEL,
               options: {
                 host: LOKI_URL,
                 labels: { app: 'nestjs-portfolio', env: 'development' },
@@ -31,12 +32,12 @@ const LOKI_URL = process.env.LOKI_URL ?? 'http://localhost:3100';
 
         return {
           pinoHttp: {
-            level: 'debug',
+            level: LOG_LEVEL,
             transport,
             customProps: (req: import('http').IncomingMessage & { id?: string }) => ({
               requestId: req.id,
             }),
-            autoLogging: true,
+            autoLogging: false,
             serializers: {
               req: (req: Record<string, unknown>) => ({
                 id: req['id'],
