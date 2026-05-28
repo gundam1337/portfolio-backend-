@@ -60,6 +60,7 @@ export class QueryService {
       requestId,
     });
 
+
     // const lowConfidenceMode = retrieval.lowConfidence || rerank.chunks.length === 0;
 
     // Step 11: Prompt construction

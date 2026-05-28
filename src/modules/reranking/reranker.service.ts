@@ -10,8 +10,6 @@ import type { RerankedChunk, RerankResult } from './reranker.types';
 
 interface CohereRerankResultItem { index: number; relevanceScore: number; }
 
-const RERANK_TIMEOUT_MS = 5_000;
-
 interface RerankInput {
   query: string;
   chunks: RetrievedChunk[];
@@ -51,28 +49,10 @@ export class RerankerService {
 
     try {
       const response = await retryWithBackoff(
-        async () => {
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), RERANK_TIMEOUT_MS);
-          try {
-            return await this.cohereClient.rerank(
-              { model: this.model, query, documents: chunks.map((c) => c.text), topN: this.topN },
-              { abortSignal: controller.signal },
-            );
-          } finally {
-            clearTimeout(timer);
-          }
-        },
-        {
-          maxAttempts: 3,
-          delaysMs: [1_000, 3_000],
-          isRetryable: (err) => {
-            if (err instanceof Error && err.name === 'AbortError') return true;
-            const status = (err as { status?: number }).status;
-            if (typeof status === 'number') return status === 429 || status >= 500;
-            return true;
-          },
-        },
+        () => this.cohereClient.rerank(
+          { model: this.model, query, documents: chunks.map((c) => c.text), topN: this.topN },
+        ),
+        { maxAttempts: 3, delaysMs: [1_000, 3_000] },
       );
 
       const durationMs = Date.now() - startMs;
@@ -110,8 +90,7 @@ export class RerankerService {
     } catch (err) {
       const durationMs = Date.now() - startMs;
       const errorClass = err instanceof Error ? err.constructor.name : 'UnknownError';
-      const fallbackReason =
-        err instanceof Error && err.name === 'AbortError' ? 'timeout' : 'api_error';
+      const fallbackReason: RerankResult['fallbackReason'] = 'api_error';
       this.logger.warn({ requestId, fallbackReason, errorClass, durationMs }, 'reranking_fallback');
       return this.buildFallback(chunks, fallbackReason, durationMs);
     }
