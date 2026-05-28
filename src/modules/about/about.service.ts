@@ -1,18 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
 import type { AboutDataDto, AboutResponseDto } from './dto/about-response.dto';
 
 @Injectable()
 export class AboutService {
-  constructor(private readonly i18n: I18nService) {}
-
-  async getAbout(lang: string): Promise<AboutResponseDto> {
-    const t = (key: string) => this.i18n.t(`about.${key}`, { lang });
-
+  getAbout(): AboutResponseDto {
     const data: AboutDataDto = {
       project: {
         name: 'Omar Portfolio',
-        description: await t('project.description'),
+        description: 'A modern, high-performance portfolio built with cutting-edge web technologies.',
         version: '2.1.0',
         status: 'active',
         environment: process.env.NODE_ENV ?? 'development',
@@ -20,7 +15,7 @@ export class AboutService {
       },
       author: {
         name: 'Omar',
-        role: await t('author.role'),
+        role: 'Full-Stack Developer',
         website: 'https://your-domain.com',
         github: 'https://github.com/your-username',
       },
@@ -31,16 +26,16 @@ export class AboutService {
       },
       features: [
         {
-          title: await t('features.responsiveDesign.title'),
-          description: await t('features.responsiveDesign.description'),
+          title: 'Responsive Design',
+          description: 'Fully responsive layout that looks great on all devices and screen sizes.',
         },
         {
-          title: await t('features.seoOptimized.title'),
-          description: await t('features.seoOptimized.description'),
+          title: 'SEO Optimized',
+          description: 'Built with best SEO practices to maximize visibility and search engine ranking.',
         },
         {
-          title: await t('features.animations.title'),
-          description: await t('features.animations.description'),
+          title: 'Smooth Animations',
+          description: 'Fluid animations and transitions powered by Framer Motion.',
         },
       ],
       performance: {
@@ -61,9 +56,9 @@ export class AboutService {
         repository: 'https://github.com/your-username/portfolio',
       },
       futurePlans: [
-        await t('futurePlans.blog'),
-        await t('futurePlans.adminDashboard'),
-        await t('futurePlans.multilingualSupport'),
+        'Add a technical blog with MDX support',
+        'Build an admin dashboard for content management',
+        'Expand multilingual support with more languages',
       ],
     };
 

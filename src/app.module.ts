@@ -6,9 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { Keyv } from 'keyv';
-import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { LoggerModule as AppLoggerModule } from './shared/logger/logger.module';
-import * as path from 'path';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { CustomThrottlerGuard } from './common/guards/throttler.guard';
 import { validateEnv, type Env } from './config/env.validation';
@@ -71,17 +69,6 @@ import { QueryModule } from './modules/query/query.module';
         );
         return { ttl, stores };
       },
-    }),
-    I18nModule.forRoot({
-      fallbackLanguage: 'en',
-      loaderOptions: {
-        path: path.join(__dirname, '/i18n/'),
-        watch: true,
-      },
-      resolvers: [
-        { use: QueryResolver, options: ['lang'] },
-        AcceptLanguageResolver,
-      ],
     }),
     HealthModule,
     AboutModule,

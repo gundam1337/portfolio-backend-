@@ -25,7 +25,6 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/i18n ./dist/i18n
 
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
