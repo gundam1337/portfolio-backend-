@@ -45,10 +45,10 @@ export class QueryService {
     });
 
     // Step 5: Embedding
-    // const embedResult = await this.embeddingService.embed({
-    //   text: rewriteResult.rewrittenQuestion,
-    //   requestId,
-    // });
+    const embedResult = await this.embeddingService.embed({
+      text: rewriteResult.rewrittenQuestion,
+      requestId,
+    });
 
     // Step 7: Vector search
     // const retrieval = await this.retrievalService.search({

@@ -115,7 +115,7 @@ export class QueryRewriterService {
 
       const durationMs = Date.now() - startMs;
       this.logger.info(
-        { requestId, rewriteUsed, durationMs, fallbackReason: null },
+        { requestId, rewriteUsed, durationMs, fallbackReason: null, rewrittenQuestion },
         'query_rewrite_completed',
       );
 
