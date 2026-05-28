@@ -92,36 +92,6 @@ beforeEach(async () => {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('RerankerService', () => {
-  describe('short-circuit: low confidence', () => {
-    it('returns immediately without calling Cohere when lowConfidence is true', async () => {
-      const result = await service.rerank({
-        query: 'test',
-        chunks: makeChunks(5),
-        lowConfidence: true,
-        requestId: 'r1',
-      });
-
-      expect(mockV2Rerank).not.toHaveBeenCalled();
-      expect(result.used).toBe(false);
-      expect(result.fallbackReason).toBe('low_confidence');
-      expect(result.chunks).toEqual([]);
-      expect(result.durationMs).toBe(0);
-    });
-
-    it('returns immediately without calling Cohere when chunks is empty', async () => {
-      const result = await service.rerank({
-        query: 'test',
-        chunks: [],
-        lowConfidence: false,
-        requestId: 'r2',
-      });
-
-      expect(mockV2Rerank).not.toHaveBeenCalled();
-      expect(result.used).toBe(false);
-      expect(result.fallbackReason).toBe('low_confidence');
-    });
-  });
-
   describe('successful rerank', () => {
     it('returns up to topN chunks ordered by rerankerScore descending', async () => {
       const chunks = makeChunks(15);
@@ -139,7 +109,6 @@ describe('RerankerService', () => {
       const result = await service.rerank({
         query: 'teaching experience',
         chunks,
-        lowConfidence: false,
         requestId: 'r3',
       });
 
@@ -169,7 +138,6 @@ describe('RerankerService', () => {
       const result = await service.rerank({
         query: 'test',
         chunks,
-        lowConfidence: false,
         requestId: 'r4',
       });
 
@@ -188,7 +156,6 @@ describe('RerankerService', () => {
       await service.rerank({
         query: 'test',
         chunks,
-        lowConfidence: false,
         requestId: 'r5',
       });
 
@@ -198,122 +165,64 @@ describe('RerankerService', () => {
   });
 
   describe('retry behaviour', () => {
-    it('retries up to 3 times on 5xx then falls back with fallbackReason api_error', async () => {
+    it('retries up to 3 times on 5xx then throws', async () => {
       mockV2Rerank.mockRejectedValue(makeStatusError(503));
 
-      const result = await service.rerank({
-        query: 'test',
-        chunks: makeChunks(10),
-        lowConfidence: false,
-        requestId: 'r6',
-      });
+      await expect(
+        service.rerank({ query: 'test', chunks: makeChunks(10), requestId: 'r6' }),
+      ).rejects.toThrow();
 
       expect(mockV2Rerank).toHaveBeenCalledTimes(3);
-      expect(result.used).toBe(false);
-      expect(result.fallbackReason).toBe('api_error');
-      // Falls back to vector top-N
-      expect(result.chunks).toHaveLength(TOP_N);
     }, 15_000);
 
-    it('retries on 429', async () => {
+    it('retries on 429 then throws', async () => {
       mockV2Rerank.mockRejectedValue(makeStatusError(429));
 
-      const result = await service.rerank({
-        query: 'test',
-        chunks: makeChunks(10),
-        lowConfidence: false,
-        requestId: 'r7',
-      });
+      await expect(
+        service.rerank({ query: 'test', chunks: makeChunks(10), requestId: 'r7' }),
+      ).rejects.toThrow();
 
       expect(mockV2Rerank).toHaveBeenCalledTimes(3);
-      expect(result.fallbackReason).toBe('api_error');
     }, 15_000);
 
-    it('does NOT retry on 401, falls back immediately', async () => {
+    it('does NOT retry on 401, throws immediately', async () => {
       mockV2Rerank.mockRejectedValue(makeStatusError(401));
 
-      const result = await service.rerank({
-        query: 'test',
-        chunks: makeChunks(10),
-        lowConfidence: false,
-        requestId: 'r8',
-      });
+      await expect(
+        service.rerank({ query: 'test', chunks: makeChunks(10), requestId: 'r8' }),
+      ).rejects.toThrow();
 
       expect(mockV2Rerank).toHaveBeenCalledTimes(1);
-      expect(result.used).toBe(false);
-      expect(result.fallbackReason).toBe('api_error');
     });
   });
 
   describe('timeout', () => {
-    it('falls back with fallbackReason timeout on AbortError', async () => {
+    it('throws on AbortError', async () => {
       mockV2Rerank.mockRejectedValue(makeAbortError());
 
-      const result = await service.rerank({
-        query: 'test',
-        chunks: makeChunks(10),
-        lowConfidence: false,
-        requestId: 'r9',
-      });
-
-      expect(result.used).toBe(false);
-      expect(result.fallbackReason).toBe('timeout');
-      expect(result.chunks).toHaveLength(TOP_N);
+      await expect(
+        service.rerank({ query: 'test', chunks: makeChunks(10), requestId: 'r9' }),
+      ).rejects.toThrow('Aborted');
     }, 15_000);
   });
 
   describe('invalid response shape', () => {
-    it('falls back with fallbackReason invalid_response when results is not an array', async () => {
+    it('throws when results is not an array', async () => {
       mockV2Rerank.mockResolvedValue({ results: null });
 
-      const result = await service.rerank({
-        query: 'test',
-        chunks: makeChunks(10),
-        lowConfidence: false,
-        requestId: 'r10',
-      });
-
-      expect(result.used).toBe(false);
-      expect(result.fallbackReason).toBe('invalid_response');
-      expect(result.chunks).toHaveLength(TOP_N);
+      await expect(
+        service.rerank({ query: 'test', chunks: makeChunks(10), requestId: 'r10' }),
+      ).rejects.toThrow('response.results is not an array');
     });
 
-    it('falls back when a result item is missing relevanceScore', async () => {
+    it('throws when a result item is missing relevanceScore', async () => {
       mockV2Rerank.mockResolvedValue({
         results: [{ index: 0 }], // missing relevanceScore
       });
 
-      const result = await service.rerank({
-        query: 'test',
-        chunks: makeChunks(5),
-        lowConfidence: false,
-        requestId: 'r11',
-      });
-
-      expect(result.used).toBe(false);
-      expect(result.fallbackReason).toBe('invalid_response');
+      await expect(
+        service.rerank({ query: 'test', chunks: makeChunks(5), requestId: 'r11' }),
+      ).rejects.toThrow('invalid shape');
     });
-  });
-
-  describe('fallback vector top-N', () => {
-    it('returns at most topN chunks from the input list ordered by vectorScore', async () => {
-      // 10 chunks with descending scores: 1.0, 0.9, ..., 0.1
-      const chunks = Array.from({ length: 10 }, (_, i) =>
-        makeChunk({ id: `c${i}`, score: 1.0 - i * 0.1 }),
-      );
-      mockV2Rerank.mockRejectedValue(makeStatusError(500));
-
-      const result = await service.rerank({
-        query: 'test',
-        chunks,
-        lowConfidence: false,
-        requestId: 'r12',
-      });
-
-      expect(result.chunks).toHaveLength(TOP_N);
-      // First fallback chunk has the highest vectorScore
-      expect(result.chunks[0].vectorScore).toBe(chunks[0].score);
-      expect(result.chunks[0].rerankerScore).toBe(chunks[0].score); // rerankerScore = vectorScore on fallback
-    }, 15_000);
   });
 });

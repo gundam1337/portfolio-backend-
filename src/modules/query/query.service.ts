@@ -56,7 +56,6 @@ export class QueryService {
     const rerank = await this.rerankerService.rerank({
       query: rewriteResult.rewrittenQuestion,
       chunks: retrieval.chunks,
-      lowConfidence: retrieval.lowConfidence,
       requestId,
     });
 

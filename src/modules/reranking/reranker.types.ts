@@ -7,8 +7,8 @@ export interface RerankedChunk extends RetrievedChunk {
 
 export interface RerankResult {
   chunks: RerankedChunk[];
-  used: boolean;
-  model: string | null;
+  used: true;
+  model: string;
   durationMs: number;
-  fallbackReason: 'low_confidence' | 'api_error' | 'timeout' | 'invalid_response' | null;
+  fallbackReason: null;
 }
