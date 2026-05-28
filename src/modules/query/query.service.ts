@@ -62,29 +62,21 @@ export class QueryService {
     console.log('Rerank result:', rerank);
 
 
-    // const lowConfidenceMode = retrieval.lowConfidence || rerank.chunks.length === 0;
+    const lowConfidenceMode = retrieval.lowConfidence || rerank.chunks.length === 0;
 
-    // Step 11: Prompt construction
-    // const prompt = this.promptBuilder.build({
-    //   originalQuestion: dto.question,
-    //   rerankedChunks: rerank.chunks,
-    //   conversationHistory: historyBeforeAppend,
-    //   lowConfidenceMode,
-    //   requestId,
-    // });
+    
+    const prompt = this.promptBuilder.build({
+      originalQuestion: dto.question,
+      rerankedChunks: rerank.chunks,
+      conversationHistory: historyBeforeAppend,
+      lowConfidenceMode,
+      requestId,
+    });
 
-    // Step 12: LLM answer
-    // const llmResult = await this.llmService.complete(prompt.messages, requestId);
+    const llmResult = await this.llmService.complete(prompt.messages, requestId);
 
-    // Step 13: Follow-up suggestions
-    // const suggestions = await this.llmService.suggestFollowUps(dto.question, llmResult.text, requestId);
-
-    // Step 14: Persist assistant message
-    // await this.sessionService.appendAssistantMessage(session.id, llmResult.text);
-
-
-    // const topRerankerScore = rerank.chunks[0]?.rerankerScore ?? null;
-
+     const suggestions = await this.llmService.suggestFollowUps(dto.question, llmResult.text, requestId);
+    
     return {
       requestId,
       // conversationId: session.id,
