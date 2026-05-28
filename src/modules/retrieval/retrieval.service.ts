@@ -68,36 +68,15 @@ export class RetrievalService {
     // b. Call Qdrant with retry
     let rawPoints: Awaited<ReturnType<QdrantClient['search']>>;
     try {
-      rawPoints = await retryWithBackoff(
-        async () => {
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), SEARCH_TIMEOUT_MS);
-          try {
-            return await this.qdrant.search(this.collection, {
-              vector: queryVector,
-              limit: this.topK,
-              with_payload: true,
-              with_vector: false,
-              filter: undefined,
-              timeout: SEARCH_TIMEOUT_MS / 1000,
-            });
-          } finally {
-            clearTimeout(timer);
-          }
-        },
-        {
-          maxAttempts: 3,
-          delaysMs: [1_000, 3_000],
-          isRetryable: (err) => {
-            const status = (err as { status?: number }).status;
-            if (typeof status === 'number') {
-              // Retry 429 and 5xx; do NOT retry other 4xx (config errors)
-              return status === 429 || status >= 500;
-            }
-            // No status → network / timeout error → retryable
-            return true;
-          },
-        },
+      rawPoints = await retryWithBackoff(() =>
+        this.qdrant.search(this.collection, {
+          vector: queryVector,
+          limit: this.topK,
+          with_payload: true,
+          with_vector: false,
+          filter: undefined,
+          timeout: SEARCH_TIMEOUT_MS / 1000,
+        }),
       );
     } catch (err) {
       const durationMs = Date.now() - startMs;
@@ -156,15 +135,31 @@ export class RetrievalService {
     const durationMs = Date.now() - startMs;
 
     this.logger.info(
+      { requestId, count: chunks.length, topScore, lowestScore, lowConfidence, durationMs },
+      'retrieval_completed',
+    );
+
+    // Full chunk payloads only at TRACE — keep INFO terminal scannable
+    this.logger.trace(
+      {
+        requestId,
+        chunks: chunks.map((c) => ({
+          id: c.id,
+          score: c.score,
+          source: c.sourceFile,
+          text: c.text.slice(0, 120),
+        })),
+      },
+      'retrieval_chunks',
+    );
+
+    this.logger.info(
       {
         requestId,
         count: chunks.length,
-        topScore,
-        lowestScore,
-        lowConfidence,
-        durationMs,
+        chunks
       },
-      'retrieval_completed',
+      'retrieval_summary',
     );
 
     return {

@@ -37,32 +37,28 @@ export class QueryService {
     const historyBeforeAppend = await this.sessionService.getRecentHistory(session.id);
     await this.sessionService.appendUserMessage(session.id, dto.question);
 
-    // Step 4: Query rewriting
     const rewriteResult = await this.queryRewriter.rewrite({
       originalQuestion: dto.question,
       history: historyBeforeAppend,
       requestId,
     });
 
-    // Step 5: Embedding
     const embedResult = await this.embeddingService.embed({
       text: rewriteResult.rewrittenQuestion,
       requestId,
     });
 
-    // Step 7: Vector search
-    // const retrieval = await this.retrievalService.search({
-    //   queryVector: embedResult.vector,
-    //   requestId,
-    // });
-
-    // Step 9: Reranking
-    // const rerank = await this.rerankerService.rerank({
-    //   query: rewriteResult.rewrittenQuestion,
-    //   chunks: retrieval.chunks,
-    //   lowConfidence: retrieval.lowConfidence,
-    //   requestId,
-    // });
+    const retrieval = await this.retrievalService.search({
+      queryVector: embedResult.vector,
+      requestId,
+    });
+    
+    const rerank = await this.rerankerService.rerank({
+      query: rewriteResult.rewrittenQuestion,
+      chunks: retrieval.chunks,
+      lowConfidence: retrieval.lowConfidence,
+      requestId,
+    });
 
     // const lowConfidenceMode = retrieval.lowConfidence || rerank.chunks.length === 0;
 
