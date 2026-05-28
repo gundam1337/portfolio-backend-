@@ -88,9 +88,6 @@ export class QueryRewriterService {
       return { rewrittenQuestion: originalQuestion, rewriteUsed: false, fallbackReason: reason };
     };
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), REWRITE_TIMEOUT_MS);
-
     try {
       const response = await this.openai.chat.completions.create(
         {
@@ -102,10 +99,8 @@ export class QueryRewriterService {
             { role: 'user', content: buildUserMessage(originalQuestion, history) },
           ],
         },
-        { signal: controller.signal },
+        { timeout: REWRITE_TIMEOUT_MS },
       );
-
-      clearTimeout(timer);
 
       const raw = response.choices[0]?.message?.content ?? '';
       const validation = validateOutput(raw);
@@ -126,17 +121,8 @@ export class QueryRewriterService {
 
       return { rewrittenQuestion, rewriteUsed, fallbackReason: null };
     } catch (err) {
-      clearTimeout(timer);
-
-      // AbortController fires a DOMException with name 'AbortError', but the
-      // openai SDK may also wrap it.  Check both the error itself and its cause.
-      const isAbort =
-        (err instanceof Error && err.name === 'AbortError') ||
-        (err instanceof Error &&
-          err.cause instanceof Error &&
-          err.cause.name === 'AbortError');
-
-      return fallback(isAbort ? 'timeout' : 'api_error');
+      const isTimeout = err instanceof Error && err.name === 'APIConnectionTimeoutError';
+      return fallback(isTimeout ? 'timeout' : 'api_error');
     }
   }
 }
