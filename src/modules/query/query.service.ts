@@ -59,6 +59,8 @@ export class QueryService {
       requestId,
     });
 
+    console.log('Rerank result:', rerank);
+
 
     // const lowConfidenceMode = retrieval.lowConfidence || rerank.chunks.length === 0;
 

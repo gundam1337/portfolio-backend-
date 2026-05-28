@@ -10,6 +10,8 @@ import type { RerankedChunk, RerankResult } from './reranker.types';
 
 interface CohereRerankResultItem { index: number; relevanceScore: number; }
 
+const RERANKER_WEIGHT = 0.3;
+
 interface RerankInput {
   query: string;
   chunks: RetrievedChunk[];
@@ -60,14 +62,36 @@ export class RerankerService {
       }
     }
 
-    const reranked: RerankedChunk[] = (response.results as CohereRerankResultItem[]).map((r) => ({
-      ...chunks[r.index],
-      rerankerScore: r.relevanceScore,
-      vectorScore: chunks[r.index].score,
-    }));
+    const results = response.results as CohereRerankResultItem[];
 
-    const topScore = reranked[0]?.rerankerScore ?? null;
-    const lowestScore = reranked[reranked.length - 1]?.rerankerScore ?? null;
+    const rerankerScores = results.map((r) => r.relevanceScore);
+    const vectorScores = results.map((r) => chunks[r.index].score);
+
+    const rerankerMin = Math.min(...rerankerScores);
+    const rerankerMax = Math.max(...rerankerScores);
+    const vectorMin = Math.min(...vectorScores);
+    const vectorMax = Math.max(...vectorScores);
+
+    const normalize = (val: number, min: number, max: number) =>
+      max === min ? 1 : 0.1 + 0.9 * (val - min) / (max - min);
+
+    const reranked: RerankedChunk[] = results
+      .map((r) => {
+        const chunk = chunks[r.index];
+        const normReranker = normalize(r.relevanceScore, rerankerMin, rerankerMax);
+        const normVector = normalize(chunk.score, vectorMin, vectorMax);
+        const hybridScore = RERANKER_WEIGHT * normReranker + (1 - RERANKER_WEIGHT) * normVector;
+        return {
+          ...chunk,
+          score: hybridScore,
+          rerankerScore: r.relevanceScore,
+          vectorScore: chunk.score,
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    const topScore = reranked[0]?.score ?? null;
+    const lowestScore = reranked[reranked.length - 1]?.score ?? null;
 
     this.logger.info(
       { requestId, durationMs, topScore, lowestScore },
