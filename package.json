@@ -4,7 +4,7 @@
   "description": "Portfolio backend service",
   "private": true,
   "scripts": {
-    "build": "nest build && mkdir -p dist/src/i18n && cp -r src/i18n/. dist/src/i18n",
+    "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "rm -rf dist && nest start --watch",
