@@ -13,6 +13,7 @@ import { validateEnv, type Env } from './config/env.validation';
 import { AboutModule } from './modules/about/about.module';
 import { HealthModule } from './modules/health/health.module';
 import { QueryModule } from './modules/query/query.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { QueryModule } from './modules/query/query.module';
     HealthModule,
     AboutModule,
     QueryModule,
+    ChatModule,
   ],
   providers: [
     {
