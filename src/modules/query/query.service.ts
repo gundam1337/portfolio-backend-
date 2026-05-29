@@ -59,9 +59,6 @@ export class QueryService {
       requestId,
     });
 
-    console.log('Rerank result:', rerank);
-
-
     const lowConfidenceMode = retrieval.lowConfidence || rerank.chunks.length === 0;
 
     
@@ -79,15 +76,19 @@ export class QueryService {
     
     return {
       requestId,
-      // conversationId: session.id,
-      // answer: {
-      //   text: llmResult.text,
-      //   format: 'markdown',
-      // },
-      // confidence: this.deriveConfidence(topRerankerScore, lowConfidenceMode, rerank.chunks[0]),
-      // sources: this.buildSources(rerank.chunks),
-      // suggestions,
-      // status: lowConfidenceMode ? 'low_confidence' : 'answered',
+      conversationId: session.id,
+      answer: {
+        text: llmResult.text,
+        format: 'markdown',
+      },
+      confidence: this.deriveConfidence(
+        rerank.chunks[0]?.rerankerScore ?? null,
+        lowConfidenceMode,
+        rerank.chunks[0],
+      ),
+      sources: this.buildSources(rerank.chunks),
+      suggestions,
+      status: lowConfidenceMode ? 'low_confidence' : 'answered',
     };
   }
 
