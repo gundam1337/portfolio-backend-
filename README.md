@@ -32,6 +32,10 @@ Instead of a static portfolio page, I built a backend that lets you **ask** abou
 
 ## Architecture
 
+### High-Level Overview
+
+![High-level architecture overview](<Screenshot 2026-06-18 at 1.42.18 AM.png>)
+
 ### Query Pipeline (7 stages, per request)
 
 ```
